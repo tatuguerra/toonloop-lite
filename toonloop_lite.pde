@@ -21,45 +21,26 @@
  *  - Press numbers from 0 to 9 to switch to an other sequence.
  */
 
-// UNCOMMENT If on Mac or Windows:
 import processing.video.*;
 Capture cam;
-// UNCOMMENT If on GNU/Linux:
-/*
-//import codeanticode.gsvideo.*;
-GSCapture cam;
-*/
+
 int LOOP_MAX_NUM_FRAME = 500;
 int NUM_SEQUENCES = 10; 
 int LOOP_WIDTH = 320;
-int LOOP_HEIGHT = 240;
+int LOOP_HEIGHT = 180;
 int FRAME_RATE = 8;
-float WINDOW_SIZE_RATIO = 1.5;
+float WINDOW_SIZE_RATIO = 1.0;
 int SAVED_MESSAGE_DURATION = 30;
 float SAVED_MESS_SIZE_RATIO = 0.5;
 int TEXT_FONT_SIZE = 24;
 boolean ENABLE_QUIT = false;
 int ONION_PEEL_ALPHA = 63;
-// UNCOMMENT if on Mac or Windows:
-// -------------------------------
-//Choose only one of the followings: 
-//int LOOP_CODEC = MovieMaker.H263;
-//int LOOP_CODEC = MovieMaker.H264;
-//int LOOP_CODEC = MovieMaker.MOTION_JPEG_A;
-int LOOP_CODEC = MovieMaker.MOTION_JPEG_B;
-//int LOOP_CODEC = MovieMaker.ANIMATION;
-// --------------------------------
-//Choose only one of the followings: 
-//int LOOP_QUALITY = MovieMaker.HIGH;
-int LOOP_QUALITY = MovieMaker.BEST;
-//int LOOP_QUALITY = MovieMaker.LOSSLESS;
-MovieMaker movieOut;
+
 int currentSeq = 0;
 PFont font;
 int is_auto_recording = 0;
 int isFlashing = 0;
 int is_displaying_saved_message = 0;
-
 String saved_file_name;
 ToonSequence sequences[] = new ToonSequence[NUM_SEQUENCES];
 
@@ -67,17 +48,10 @@ void setup()
 {
   size((int)(LOOP_WIDTH*2*WINDOW_SIZE_RATIO), (int)(LOOP_HEIGHT*2*WINDOW_SIZE_RATIO)); 
   frameRate(FRAME_RATE);
-  // UNCOMMENT If on Mac or Windows:
   cam = new Capture(this, LOOP_WIDTH, LOOP_HEIGHT);
   println("Available cameras :");
-  //print(Capture.list());
-  // end of Mac or Windows 
-  // UNCOMMENT If on GNU/Linux:
-  /*
-  cam = new GSCapture(this, LOOP_WIDTH, LOOP_HEIGHT);
-  println("Cannot list cameras on GNU/Linux");
-  */
-  // end of GNU/Linux
+  print(Capture.list());
+  cam.start();
   for (int i = 0; i < sequences.length; i++) {
     sequences[i] = new ToonSequence();
   }
@@ -331,67 +305,9 @@ class ToonSequence
     }
   }
 }
-
-// UNCOMMENT If under GNU/Linux:
-/*
-void saveMovie() 
-{
-  println("Saving is disabled on GNU/Linux");
-}
-*/
-// UNCOMMENT If under Mac or Windows:  
 // Starts a thread to save a movie of the current sequence in the background.
 void saveMovie() 
 {
-  SaveThread t = new SaveThread(this,currentSeq);
-  t.start();  
+  // Not supported
 }
-// One thread to save a movie
-class SaveThread extends Thread 
-{
-  PApplet theParent;
-  int seqNum;
-  // Args: PApplet "this", sequence number
-  SaveThread(PApplet p, int sequenceNum) 
-  {
-    seqNum = sequenceNum;
-    theParent = p;
-    println("saving " + seqNum);
-  }
-  public void run() 
-  {
-    // Create MovieMaker object with size, filename,
-    // compression codec and quality, framerate
-    String file_name;
-    if (sequences[seqNum].captureFrameNum == 0) 
-    {
-      println("no frame to save!");
-    } 
-    else 
-    {
-        file_name = "toonloop_"+String.valueOf(year())
-            +"_"+String.valueOf(month())
-            +"_"+String.valueOf(day())
-                +"_"+String.valueOf(hour())
-                +"h"+String.valueOf(minute())
-                    +"m"+String.valueOf(second())
-                    +".mov";
-        println("saving to "+file_name+" :");
-        is_displaying_saved_message = SAVED_MESSAGE_DURATION;
-        saved_file_name = file_name;
-        
-        movieOut = new MovieMaker(theParent, LOOP_WIDTH, LOOP_HEIGHT, 
-        file_name, FRAME_RATE, LOOP_CODEC, LOOP_QUALITY);
-        for (int i = 0; i < sequences[seqNum].captureFrameNum; i++) 
-        {
-            print(i+" ");
-            movieOut.addFrame(sequences[seqNum].images[i].pixels, LOOP_WIDTH, LOOP_HEIGHT);
-        }
-        println();
-        movieOut.finish();
-        println("done saving");
-        movieOut = null;
-    }
-  }
-}
-// end of Mac or Windows
+
