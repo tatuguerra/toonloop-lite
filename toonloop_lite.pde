@@ -5,6 +5,8 @@
  * @license GNU Public License version 2
  * @url http://www.toonloop.com
  * 
+ * For Syphon: https://socram484.wordpress.com/2013/09/12/using-syphon-with-processing-into-madmapper/
+ *
  * In the left window, you can see what is seen by the live camera.
  * In the right window, it is the result of the stop motion loop.
  * 
@@ -22,7 +24,9 @@
  */
 
 import processing.video.*;
-Capture cam;
+import codeanticode.syphon.*;
+
+
 
 int LOOP_MAX_NUM_FRAME = 500;
 int NUM_SEQUENCES = 10; 
@@ -43,10 +47,13 @@ int isFlashing = 0;
 int is_displaying_saved_message = 0;
 String saved_file_name;
 ToonSequence sequences[] = new ToonSequence[NUM_SEQUENCES];
+Capture cam;
+PGraphics syphon_canvas;
+SyphonServer syphon_server;
 
 void setup() 
 {
-  size((int)(LOOP_WIDTH*2*WINDOW_SIZE_RATIO), (int)(LOOP_HEIGHT*2*WINDOW_SIZE_RATIO)); 
+  size((int)(LOOP_WIDTH*2*WINDOW_SIZE_RATIO), (int)(LOOP_HEIGHT*2*WINDOW_SIZE_RATIO), P3D); 
   frameRate(FRAME_RATE);
   cam = new Capture(this, LOOP_WIDTH, LOOP_HEIGHT);
   println("Available cameras :");
@@ -59,6 +66,9 @@ void setup()
   println("Welcome to ToonLoop ! The Live Stop Motion Animation Tool.");
   println(")c( Alexandre Quessy 2008");
   println("http://alexandre.quessy.net");
+  
+  syphon_canvas = createGraphics(LOOP_WIDTH, LOOP_HEIGHT, P3D);
+  syphon_server = new SyphonServer(this, "Toonloop Syphon");
 }
 
 void draw() 
@@ -122,6 +132,17 @@ void draw()
     fill(255,0,0,255);
     text("Saved to "+saved_file_name + ". ("+LOOP_WIDTH +"x"+ LOOP_HEIGHT+")", x,the_y);
   }
+  syphon_canvas.beginDraw();
+  if (sequences[currentSeq].captureFrameNum > 0) 
+  {
+    syphon_canvas.image(sequences[currentSeq].images[sequences[currentSeq].playFrameNum], 0, 0);
+  }
+  else
+  {
+    syphon_canvas.image(cam, 0, 0);
+  }
+  syphon_canvas.endDraw();
+  syphon_server.sendImage(syphon_canvas);
 }
 
 void keyPressed() 
